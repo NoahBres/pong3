@@ -38,4 +38,60 @@ public class Ball {
         g2.setStroke(new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 7.9f }, 0));
         g2.drawOval((int) (x - width / 2), (int) (y - height / 2), width, height);
     }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getRadius() {
+        return width / 2;
+    }
+
+    public double getVelX() {
+        return velX;
+    }
+
+    public void setVelX(double velX) {
+        this.velX = velX;
+    }
+
+    public double getVelY() {
+        return velY;
+    }
+
+    public void setVelY(double velY) {
+        this.velY = velY;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }

@@ -14,12 +14,19 @@ public class Game implements KeyListener {
 
     private Board board;
     private Paddle p1;
+    private Paddle p2;
+    private Paddle p3;
     private Ball ball;
 
     private boolean leftArrowPressed = false;
     private boolean rightArrowPressed = false;
+    private boolean wPressed = false;
+    private boolean sPressed = false;
 
+    private int paddleHeight = 8;
     private int boardSideLength = 600;
+    private double boardPaddleLimits = 0.8;
+    private int paddleBoardPadding = 20;
 
     Game() {
         display = new Display(this);
@@ -31,11 +38,19 @@ public class Game implements KeyListener {
         //board.DEBUG = true;
         ball = new Ball(this, board.getOrthocenterX(), board.getOrthocenterY(), 30, 30, Color.white);
         p1 = new Paddle(board.getBottomSide().getX(),
-                    (board.getBottomSide().getY() - board.getSideThickness() / 2 + 4) - 20,
-                    80, 8,
+                    (board.getBottomSide().getY() - board.getSideThickness() / 2 + paddleHeight / 2) - paddleBoardPadding,
+                    80, paddleHeight,
                     0, new Color(255, 135, 135),
-                    (int) (board.getBottomSide().getX() - board.getBottomSide().getWidth() * .8 / 2),
-                    (int) (board.getBottomSide().getX() + board.getBottomSide().getWidth() * .8 / 2));
+                    (int) (board.getBottomSide().getX() - board.getBottomSide().getWidth() * boardPaddleLimits / 2),
+                    (int) (board.getBottomSide().getX() + board.getBottomSide().getWidth() * boardPaddleLimits / 2));
+        // TODO Fix x and y translation to center this
+        p2 = new Paddle(board.getLeftSide().getX() + ((board.getSideThickness() / 2 + paddleBoardPadding)),
+                (board.getLeftSide().getY()),
+                //(board.getBottomSide().getY() - board.getSideThickness() / 2 + 4) - 50,
+                80, 8,
+                -60, Color.pink,//new Color(42, 217, 54),
+                (int) (board.getBottomSide().getX() - board.getBottomSide().getWidth() * boardPaddleLimits / 2),
+                (int) (board.getBottomSide().getX() + board.getBottomSide().getWidth() * boardPaddleLimits / 2));
     }
 
     public void start() {
@@ -78,11 +93,36 @@ public class Game implements KeyListener {
         }
     }
 
-    public void update(double delta) {
+    private void update(double delta) {
         ball.update(delta);
 
         if(leftArrowPressed) p1.moveLeft(delta);
         if(rightArrowPressed) p1.moveRight(delta);
+        if(wPressed) p2.moveLeft(delta);
+        if(sPressed) p2.moveRight(delta);
+
+        if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
+                                        ball.getRadius(),
+                                        board.getBottomSide().getX(), board.getBottomSide().getY(),
+                                        board.getBottomSide().getWidth(), board.getBottomSide().getHeight(),
+                                        (int) board.getBottomSide().getAngle())) {
+            ball.setVelY(-ball.getVelY());
+            System.out.println("Collide bottom");
+        } else if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
+                ball.getRadius(),
+                board.getLeftSide().getX(), board.getLeftSide().getY(),
+                board.getLeftSide().getWidth(), board.getLeftSide().getHeight(),
+                (int) board.getLeftSide().getAngle())) {
+            ball.setVelX(-ball.getVelX());
+            System.out.println("Collide Left");
+        } else if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
+                ball.getRadius(),
+                board.getRightSide().getX(), board.getRightSide().getY(),
+                board.getRightSide().getWidth(), board.getRightSide().getHeight(),
+                (int) board.getRightSide().getAngle())) {
+            ball.setVelX(-ball.getVelX());
+            System.out.println("Collide right");
+        }
     }
 
     public void render(Graphics g) {
@@ -102,6 +142,7 @@ public class Game implements KeyListener {
 
             board.draw(g2);
             p1.draw(g2);
+            p2.draw(g2);
             ball.draw(g2);
         }
     }
@@ -122,6 +163,12 @@ public class Game implements KeyListener {
             case KeyEvent.VK_RIGHT:
                 rightArrowPressed = true;
                 break;
+            case KeyEvent.VK_W:
+                wPressed = true;
+                break;
+            case KeyEvent.VK_S:
+                sPressed = true;
+                break;
         }
     }
 
@@ -135,6 +182,12 @@ public class Game implements KeyListener {
                 break;
             case KeyEvent.VK_RIGHT:
                 rightArrowPressed = false;
+                break;
+            case KeyEvent.VK_W:
+                wPressed = false;
+                break;
+            case KeyEvent.VK_S:
+                sPressed = false;
                 break;
         }
     }
@@ -155,16 +208,15 @@ public class Game implements KeyListener {
     }
 
     private boolean isCircleAndRectangleCollided(int circleX, int circleY,
-                                                 int circleWidth, int circleHeight,
                                                  int circleRadius,
                                                  int rectX, int rectY,
                                                  int rectWidth, int rectHeight,
                                                  int rectAngle) {
 
-        double unrotatedCircleX = Math.cos(rectAngle) * (circleX - rectX) -
-                                  Math.sin(rectAngle) * (circleY - rectY) + rectX;
-        double unrotatedCircleY = Math.sin(rectAngle) * (circleX - rectX) +
-                                  Math.cos(rectAngle) * (circleY - rectY) + rectY;
+        double unrotatedCircleX = Math.cos(Math.toRadians(rectAngle)) * (circleX - rectX) -
+                                  Math.sin(Math.toRadians(rectAngle)) * (circleY - rectY) + rectX;
+        double unrotatedCircleY = Math.sin(Math.toRadians(rectAngle)) * (circleX - rectX) +
+                                  Math.cos(Math.toRadians(rectAngle)) * (circleY - rectY) + rectY;
 
         double closestX, closestY;
 
@@ -175,8 +227,6 @@ public class Game implements KeyListener {
         if(unrotatedCircleY < rectY) closestY = rectY;
         else if(unrotatedCircleY > rectY + rectHeight) closestY = rectY + rectHeight;
         else closestY = unrotatedCircleY;
-
-        boolean collision = false;
 
         double distance = findDistance(unrotatedCircleX, unrotatedCircleY, closestX, closestY);
 
