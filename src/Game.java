@@ -28,6 +28,16 @@ public class Game implements KeyListener {
     private double boardPaddleLimits = 0.8;
     private int paddleBoardPadding = 20;
 
+    private int cx = 0;
+    private int cy = 0;
+    private int cr = 0;
+    private int rx = 0;
+    private int ry = 0;
+    private int rw = 0;
+    private int rh = 0;
+    private int clx = 0;
+    private int cly = 0;
+
     Game() {
         display = new Display(this);
 
@@ -101,28 +111,29 @@ public class Game implements KeyListener {
         if(wPressed) p2.moveLeft(delta);
         if(sPressed) p2.moveRight(delta);
 
+//        if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
+//                                        ball.getRadius(),
+//                                        board.getBottomSide().getX(), board.getBottomSide().getY(),
+//                                        board.getBottomSide().getWidth(), board.getBottomSide().getHeight(),
+//                                        (int) board.getBottomSide().getAngle())) {
+//            ball.setVelY(-ball.getVelY());
+//            System.out.println("Collide bottom");
         if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
-                                        ball.getRadius(),
-                                        board.getBottomSide().getX(), board.getBottomSide().getY(),
-                                        board.getBottomSide().getWidth(), board.getBottomSide().getHeight(),
-                                        (int) board.getBottomSide().getAngle())) {
-            ball.setVelY(-ball.getVelY());
-            System.out.println("Collide bottom");
-        } else if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
                 ball.getRadius(),
                 board.getLeftSide().getX(), board.getLeftSide().getY(),
                 board.getLeftSide().getWidth(), board.getLeftSide().getHeight(),
                 (int) board.getLeftSide().getAngle())) {
             ball.setVelX(-ball.getVelX());
+            ball.setVelY(-ball.getVelY());
             System.out.println("Collide Left");
-        } else if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
-                ball.getRadius(),
-                board.getRightSide().getX(), board.getRightSide().getY(),
-                board.getRightSide().getWidth(), board.getRightSide().getHeight(),
-                (int) board.getRightSide().getAngle())) {
-            ball.setVelX(-ball.getVelX());
-            System.out.println("Collide right");
-        }
+        } //else if(isCircleAndRectangleCollided((int) ball.getX(), (int) ball.getY(),
+//                ball.getRadius(),
+//                board.getRightSide().getX(), board.getRightSide().getY(),
+//                board.getRightSide().getWidth(), board.getRightSide().getHeight(),
+//                (int) board.getRightSide().getAngle())) {
+//            ball.setVelX(-ball.getVelX());
+//            System.out.println("Collide right");
+//        }
     }
 
     public void render(Graphics g) {
@@ -140,10 +151,19 @@ public class Game implements KeyListener {
 
             //g2.rotate(Math.toRadians(45), display.getWidth() / 2, display.getHeight() / 2);
 
+            g2.setColor(Color.orange);
+            g2.drawOval(cx - cr, cy - cr, cr * 2, cr * 2);
+
             board.draw(g2);
             p1.draw(g2);
             p2.draw(g2);
             ball.draw(g2);
+
+            g2.setColor(Color.orange);
+            g2.fillRect(rx, ry, rw, rh);
+
+            g2.setColor(Color.magenta);
+            g2.drawOval(clx - 1, cly - 1, 3, 3);
         }
     }
 
@@ -212,11 +232,23 @@ public class Game implements KeyListener {
                                                  int rectX, int rectY,
                                                  int rectWidth, int rectHeight,
                                                  int rectAngle) {
+        rectX -= rectWidth / 2;
+        rectY -= rectHeight / 2;
 
         double unrotatedCircleX = Math.cos(Math.toRadians(rectAngle)) * (circleX - rectX) -
                                   Math.sin(Math.toRadians(rectAngle)) * (circleY - rectY) + rectX;
         double unrotatedCircleY = Math.sin(Math.toRadians(rectAngle)) * (circleX - rectX) +
                                   Math.cos(Math.toRadians(rectAngle)) * (circleY - rectY) + rectY;
+
+        cx = (int) unrotatedCircleX;
+        cy = (int) unrotatedCircleY;
+        cr = circleRadius;
+
+        rx = rectX;
+        ry = rectY;
+        rw = rectWidth;
+        rh = rectHeight;
+
 
         double closestX, closestY;
 
@@ -227,6 +259,9 @@ public class Game implements KeyListener {
         if(unrotatedCircleY < rectY) closestY = rectY;
         else if(unrotatedCircleY > rectY + rectHeight) closestY = rectY + rectHeight;
         else closestY = unrotatedCircleY;
+
+        clx = (int) closestX;
+        cly = (int) closestY;
 
         double distance = findDistance(unrotatedCircleX, unrotatedCircleY, closestX, closestY);
 

@@ -35,7 +35,7 @@ public class Ball {
 
     public void draw(Graphics2D g2) {
         g2.setColor(color);
-        g2.setStroke(new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 7.9f }, 0));
+        //g2.setStroke(new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 7.9f }, 0));
         g2.drawOval((int) (x - width / 2), (int) (y - height / 2), width, height);
     }
 
